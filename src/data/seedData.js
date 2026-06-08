@@ -203,9 +203,9 @@ export const productSeeds = [
 
 export const bannerSeeds = [
   {
-    title: "Menos ruido visual. Más calma en casa.",
-    imageUrl: "https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=1600&q=80",
-    targetUrl: "/search?q=destacados",
+    title: "¡Ver Chainsaw Man en Crunchyroll!",
+    imageUrl: "/images/crunchyroll_ad.png",
+    targetUrl: "https://www.crunchyroll.com/",
     position: "home-main",
     isActive: true
   },
