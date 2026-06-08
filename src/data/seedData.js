@@ -210,9 +210,9 @@ export const bannerSeeds = [
     isActive: true
   },
   {
-    title: "Objetos simples para rituales cotidianos.",
-    imageUrl: "https://images.unsplash.com/photo-1513519245088-0e12902e5a38?auto=format&fit=crop&w=900&q=80",
-    targetUrl: "/contacto",
+    title: "¡Contratá Flow y disfrutá del mejor entretenimiento!",
+    imageUrl: "/images/flow_ad.png",
+    targetUrl: "https://portal.app.flow.com.ar/prelogin",
     position: "categories-side",
     isActive: true
   }
