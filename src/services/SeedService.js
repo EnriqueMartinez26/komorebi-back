@@ -7,7 +7,7 @@ export async function seedDemoData() {
   const categoryRepository = new CategoryRepository();
   const productRepository = new ProductRepository();
   const bannerRepository = new BannerRepository();
-  const existingCategories = await categoryRepository.count();
+  const existingCategories = await categoryRepository.model.countDocuments();
 
   if (existingCategories === 0) {
     await categoryRepository.model.insertMany(categorySeeds);

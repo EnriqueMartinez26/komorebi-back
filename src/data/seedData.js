@@ -164,7 +164,7 @@ export const productSeeds = [
     price: 115000,
     discountPrice: 99000,
     images: [
-      "https://images.unsplash.com/photo-1517705008128-361805f42e86?auto=format&fit=crop&w=800&q=80"
+      "/images/kit_home_office.png"
     ],
     categorySlug: "deco-funcional",
     stock: 15,
@@ -178,7 +178,7 @@ export const productSeeds = [
     price: 78000,
     discountPrice: 69000,
     images: [
-      "https://images.unsplash.com/photo-1527689368864-3a821dbccc34?auto=format&fit=crop&w=800&q=80"
+      "/images/kit_baño_spa.png"
     ],
     categorySlug: "organizacion-estetica",
     stock: 20,
@@ -192,7 +192,7 @@ export const productSeeds = [
     price: 92000,
     discountPrice: 82000,
     images: [
-      "https://images.unsplash.com/photo-1511920170033-f8396924c348?auto=format&fit=crop&w=800&q=80"
+      "/images/kit_mesa_japandi.png"
     ],
     categorySlug: "mesa-y-ritual",
     stock: 10,
