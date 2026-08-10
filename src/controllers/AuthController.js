@@ -3,6 +3,12 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { env } from "../config/env.js";
 
 const SESSION_COOKIE_MAX_AGE_MS = 1000 * 60 * 60 * 24 * 7;
+const SESSION_COOKIE_OPTIONS = {
+  httpOnly: true,
+  sameSite: env.isProduction ? "none" : "lax",
+  secure: env.isProduction,
+  path: "/"
+};
 
 export class AuthController {
   constructor() {
@@ -36,12 +42,7 @@ export class AuthController {
   });
 
   logout = asyncHandler(async (_req, res) => {
-    res.clearCookie(env.cookieName, {
-      httpOnly: true,
-      sameSite: "lax",
-      secure: false,
-      path: "/"
-    });
+    res.clearCookie(env.cookieName, SESSION_COOKIE_OPTIONS);
 
     res.json({ message: "Sesion cerrada." });
   });
@@ -67,11 +68,8 @@ export class AuthController {
 
   setSessionCookie(res, token) {
     res.cookie(env.cookieName, token, {
-      httpOnly: true,
-      sameSite: "lax",
-      secure: false,
-      maxAge: SESSION_COOKIE_MAX_AGE_MS,
-      path: "/"
+      ...SESSION_COOKIE_OPTIONS,
+      maxAge: SESSION_COOKIE_MAX_AGE_MS
     });
   }
 }

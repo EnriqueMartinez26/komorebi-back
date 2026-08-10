@@ -1,7 +1,7 @@
 import { ProductRepository } from "../repositories/ProductRepository.js";
 import { ProductDTO } from "../dtos/ProductDTO.js";
 import { ApiError } from "../utils/ApiError.js";
-import { buildPagination } from "../utils/pagination.js";
+import { buildPagination, MAX_PAGE_LIMIT } from "../utils/pagination.js";
 
 export class ProductService {
   constructor() {
@@ -42,11 +42,13 @@ export class ProductService {
   }
 
   async featured(limit = 8) {
+    const safeLimit = Math.min(Math.max(Number(limit) || 8, 1), MAX_PAGE_LIMIT);
+
     const products = await this.productRepository.model
       .find({ isActive: true, featured: true })
       .populate("categoryId")
       .sort({ createdAt: -1 })
-      .limit(Number(limit));
+      .limit(safeLimit);
 
     return products.map(ProductDTO.fromModel);
   }
