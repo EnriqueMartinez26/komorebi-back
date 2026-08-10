@@ -6,11 +6,9 @@ import { env } from "./config/env.js";
 import routes from "./routes/index.js";
 import { errorHandler, notFoundHandler } from "./middlewares/errorHandler.js";
 
-// acá armamos toda la app de express
 export function createApp() {
   const app = express();
 
-  // configuro cors para que acepte localhost y la url del frontend
   app.use(
     cors({
       origin(origin, callback) {
@@ -38,15 +36,12 @@ export function createApp() {
       credentials: true
     })
   );
-  // middlewares basicos para cookies, json y logs de peticiones
   app.use(cookieParser());
   app.use(express.json());
   app.use(morgan("dev"));
 
-  // las rutas principales de la api
   app.use("/api", routes);
-  
-  // por si buscan una ruta que no existe y el manejador de errores global
+
   app.use(notFoundHandler);
   app.use(errorHandler);
 

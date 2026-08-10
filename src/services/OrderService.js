@@ -17,37 +17,55 @@ export class OrderService {
       throw new ApiError(400, "El carrito esta vacio.");
     }
 
-    for (const item of cart.items) {
-      const product = await this.productRepository.findById(item.productId);
+    const discounted = [];
 
-      if (!product || product.stock < item.quantity) {
+    for (const item of cart.items) {
+      const product = await this.productRepository.discountStock(
+        item.productId,
+        item.quantity
+      );
+
+      if (!product) {
+        await this.restoreStock(discounted);
         throw new ApiError(400, `No hay stock suficiente para ${item.nameSnapshot}.`);
       }
 
-      product.stock -= item.quantity;
-      await product.save();
+      discounted.push(item);
     }
 
-    const order = await this.orderRepository.create({
-      userId,
-      items: cart.items.map((item) => ({
-        productId: item.productId,
-        nameSnapshot: item.nameSnapshot,
-        quantity: item.quantity,
-        priceSnapshot: item.priceSnapshot
-      })),
-      amount: cart.total,
-      paymentStatus: "pending",
-      shippingMethod: payload.shippingMethod,
-      shippingAddress: payload.shippingAddress,
-      orderStatus: "created"
-    });
+    let order;
+
+    try {
+      order = await this.orderRepository.create({
+        userId,
+        items: cart.items.map((item) => ({
+          productId: item.productId,
+          nameSnapshot: item.nameSnapshot,
+          quantity: item.quantity,
+          priceSnapshot: item.priceSnapshot
+        })),
+        amount: cart.total,
+        paymentStatus: "pending",
+        shippingMethod: payload.shippingMethod,
+        shippingAddress: payload.shippingAddress,
+        orderStatus: "created"
+      });
+    } catch (error) {
+      await this.restoreStock(discounted);
+      throw error;
+    }
 
     cart.items = [];
     cart.total = 0;
     await cart.save();
 
     return order;
+  }
+
+  async restoreStock(items) {
+    for (const item of items) {
+      await this.productRepository.restoreStock(item.productId, item.quantity);
+    }
   }
 
   async list(userId) {

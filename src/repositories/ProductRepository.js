@@ -10,6 +10,20 @@ export class ProductRepository extends BaseRepository {
     return this.model.countDocuments(filter);
   }
 
+  discountStock(productId, quantity) {
+    return this.model.findOneAndUpdate(
+      { _id: productId, stock: { $gte: quantity } },
+      { $inc: { stock: -quantity } },
+      { new: true }
+    );
+  }
+
+  restoreStock(productId, quantity) {
+    return this.model.findByIdAndUpdate(productId, {
+      $inc: { stock: quantity }
+    });
+  }
+
   searchByTerm(term, options) {
     return this.model.find(
       {
