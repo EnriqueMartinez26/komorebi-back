@@ -83,7 +83,7 @@ export class AuthService {
     return {
       token: signAuthToken({
         sub: user._id.toString(),
-        ver: user.tokenVersion ?? 0
+        tokenVersion: user.tokenVersion ?? 0
       }),
       user: UserDTO.fromModel(user)
     };
@@ -103,7 +103,7 @@ export class AuthService {
     return {
       token: signAuthToken({
         sub: user._id.toString(),
-        ver: user.tokenVersion ?? 0
+        tokenVersion: user.tokenVersion ?? 0
       }),
       user: UserDTO.fromModel(user)
     };
