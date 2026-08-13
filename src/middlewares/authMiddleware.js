@@ -18,7 +18,7 @@ export async function authMiddleware(req, _res, next) {
     const payload = verifyAuthToken(token);
     const user = await userRepository.findById(payload.sub);
 
-    if (!user) {
+    if (!user || (payload.ver ?? 0) !== (user.tokenVersion ?? 0)) {
       return next(new ApiError(401, "Sesion invalida."));
     }
 

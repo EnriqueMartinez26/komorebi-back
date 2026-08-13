@@ -35,6 +35,10 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: "customer"
     },
+    tokenVersion: {
+      type: Number,
+      default: 0
+    },
     cartId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Cart",

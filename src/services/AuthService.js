@@ -7,11 +7,15 @@ import { compareHash, hashValue } from "../utils/hash.js";
 import { signAuthToken } from "../utils/jwt.js";
 import { UserDTO } from "../dtos/UserDTO.js";
 import { sendMail } from "../utils/mailer.js";
+import { escapeHtml } from "../utils/escapeHtml.js";
 import { env } from "../config/env.js";
 
 const RESET_TOKEN_TTL_MS = 1000 * 60 * 30;
 const RESET_REQUEST_MESSAGE =
   "Si el email existe, se envio un enlace para restablecer la contrasena.";
+const INVALID_CREDENTIALS_MESSAGE = "Credenciales invalidas.";
+const DECOY_PASSWORD_HASH =
+  "$2b$10$XoawIpF5knhK/v7AkjNn1O8GHBP2a4bOBBa5cDrt9rmW/OghHDnLW";
 
 export class AuthService {
   constructor() {
@@ -62,7 +66,7 @@ export class AuthService {
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 8px; background-color: #faf8f6; color: #333;">
           <h2 style="color: #b07d62; text-align: center; margin-bottom: 20px;">¡Te damos la bienvenida a Komorebi!</h2>
-          <p>Hola <strong>${user.firstName}</strong>,</p>
+          <p>Hola <strong>${escapeHtml(user.firstName)}</strong>,</p>
           <p>¡Gracias por registrarte en nuestra tienda! Tu cuenta se creó con éxito.</p>
           <p>Ya podés empezar a explorar nuestra selección exclusiva de productos Japandi, kits de baño, y accesorios de decoración pensados para armonizar tu hogar.</p>
           <div style="text-align: center; margin: 30px 0;">
@@ -77,26 +81,30 @@ export class AuthService {
     });
 
     return {
-      token: signAuthToken({ sub: user._id.toString() }),
+      token: signAuthToken({
+        sub: user._id.toString(),
+        ver: user.tokenVersion ?? 0
+      }),
       user: UserDTO.fromModel(user)
     };
   }
 
   async login(identifier, password) {
     const user = await this.userRepository.findByEmailOrUsername(identifier);
+    const isValidPassword = await compareHash(
+      password,
+      user?.passwordHash || DECOY_PASSWORD_HASH
+    );
 
-    if (!user) {
-      throw new ApiError(404, "Usuario inexistente.");
-    }
-
-    const isValidPassword = await compareHash(password, user.passwordHash);
-
-    if (!isValidPassword) {
-      throw new ApiError(401, "Contrasena incorrecta.");
+    if (!user || !isValidPassword) {
+      throw new ApiError(401, INVALID_CREDENTIALS_MESSAGE);
     }
 
     return {
-      token: signAuthToken({ sub: user._id.toString() }),
+      token: signAuthToken({
+        sub: user._id.toString(),
+        ver: user.tokenVersion ?? 0
+      }),
       user: UserDTO.fromModel(user)
     };
   }
@@ -114,7 +122,6 @@ export class AuthService {
   async forgotPassword(email) {
     const user = await this.userRepository.findByEmail(email);
 
-    // Respondemos igual exista o no el email para no filtrar cuentas registradas
     if (!user) {
       return { message: RESET_REQUEST_MESSAGE };
     }
@@ -140,7 +147,7 @@ export class AuthService {
       to: user.email,
       subject: "Recuperacion de contrasena",
       html: `
-        <p>Hola ${user.firstName},</p>
+        <p>Hola ${escapeHtml(user.firstName)},</p>
         <p>Hace click en el siguiente enlace para restablecer tu contrasena:</p>
         <p><a href="${resetUrl}">${resetUrl}</a></p>
         <p>El enlace vence en 30 minutos.</p>
@@ -170,6 +177,7 @@ export class AuthService {
     }
 
     user.passwordHash = await hashValue(password);
+    user.tokenVersion = (user.tokenVersion ?? 0) + 1;
     await user.save();
 
     passwordReset.used = true;
