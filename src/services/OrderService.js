@@ -50,14 +50,19 @@ export class OrderService {
         shippingAddress: payload.shippingAddress,
         orderStatus: "created"
       });
+
+      cart.items = [];
+      cart.total = 0;
+      await cart.save();
     } catch (error) {
       await this.restoreStock(discounted);
+
+      if (order) {
+        await this.orderRepository.deleteById(order._id);
+      }
+
       throw error;
     }
-
-    cart.items = [];
-    cart.total = 0;
-    await cart.save();
 
     return order;
   }
