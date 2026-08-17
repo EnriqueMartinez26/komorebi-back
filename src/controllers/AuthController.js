@@ -2,7 +2,6 @@ import { AuthService } from "../services/AuthService.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { env } from "../config/env.js";
 
-const SESSION_COOKIE_MAX_AGE_MS = 1000 * 60 * 60 * 24 * 7;
 const SESSION_COOKIE_OPTIONS = {
   httpOnly: true,
   sameSite: env.isProduction ? "none" : "lax",
@@ -17,7 +16,6 @@ export class AuthController {
 
   register = asyncHandler(async (req, res) => {
     const result = await this.authService.register(req.body);
-    this.setSessionCookie(res, result.token);
 
     res.status(201).json({
       message: "Registro exitoso.",
@@ -31,8 +29,6 @@ export class AuthController {
       req.body.identifier,
       req.body.password
     );
-
-    this.setSessionCookie(res, result.token);
 
     res.json({
       message: "Login exitoso.",
@@ -65,11 +61,4 @@ export class AuthController {
     const user = await this.authService.getCurrentUser(req.user.id);
     res.json({ user });
   });
-
-  setSessionCookie(res, token) {
-    res.cookie(env.cookieName, token, {
-      ...SESSION_COOKIE_OPTIONS,
-      maxAge: SESSION_COOKIE_MAX_AGE_MS
-    });
-  }
 }
