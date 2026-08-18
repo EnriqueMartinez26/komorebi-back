@@ -5,6 +5,13 @@ export function notFoundHandler(_req, res) {
 }
 
 export function errorHandler(error, _req, res, _next) {
+  if (error.name === "CastError") {
+    return res.status(400).json({
+      message: "Identificador invalido.",
+      details: null
+    });
+  }
+
   const statusCode = error.statusCode || 500;
 
   res.status(statusCode).json({
