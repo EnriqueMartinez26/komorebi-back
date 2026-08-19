@@ -12,7 +12,7 @@ export class ProductRepository extends BaseRepository {
 
   discountStock(productId, quantity) {
     return this.model.findOneAndUpdate(
-      { _id: productId, stock: { $gte: quantity } },
+      { _id: productId, isActive: true, stock: { $gte: quantity } },
       { $inc: { stock: -quantity } },
       { new: true }
     );

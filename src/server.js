@@ -4,10 +4,12 @@ import { createApp } from "./app.js";
 import { seedDemoData } from "./services/SeedService.js";
 
 async function bootstrap() {
-  await connectDatabase();
-  await seedDemoData();
+  const isSeedOnly = process.argv.includes("--seed-only");
 
-  if (process.argv.includes("--seed-only")) {
+  await connectDatabase();
+  await seedDemoData({ force: isSeedOnly });
+
+  if (isSeedOnly) {
     process.exit(0);
   }
 

@@ -6,7 +6,11 @@ import { ApiError } from "../utils/ApiError.js";
 import { compareHash, hashValue } from "../utils/hash.js";
 import { signAuthToken } from "../utils/jwt.js";
 import { UserDTO } from "../dtos/UserDTO.js";
-import { sendMail } from "../utils/mailer.js";
+import {
+  MAIL_SERVICE_UNAVAILABLE_MESSAGE,
+  isMailerConfigured,
+  sendMail
+} from "../utils/mailer.js";
 import { escapeHtml } from "../utils/escapeHtml.js";
 import { env } from "../config/env.js";
 
@@ -120,6 +124,10 @@ export class AuthService {
   }
 
   async forgotPassword(email) {
+    if (env.isProduction && !isMailerConfigured()) {
+      throw new ApiError(503, MAIL_SERVICE_UNAVAILABLE_MESSAGE);
+    }
+
     const user = await this.userRepository.findByEmail(email);
 
     if (!user) {
@@ -143,7 +151,7 @@ export class AuthService {
 
     const resetUrl = `${env.clientUrl}/forgot-password?token=${rawToken}`;
 
-    await sendMail({
+    const delivery = await sendMail({
       to: user.email,
       subject: "Recuperacion de contrasena",
       html: `
@@ -153,6 +161,12 @@ export class AuthService {
         <p>El enlace vence en 30 minutos.</p>
       `
     });
+
+    if (delivery.mocked) {
+      console.warn(
+        `SMTP sin configurar: el mail de recuperacion no se envio. Enlace para ${user.email}: ${resetUrl}`
+      );
+    }
 
     return { message: RESET_REQUEST_MESSAGE };
   }

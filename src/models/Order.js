@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { DEFAULT_PAYMENT_METHOD, PAYMENT_METHODS } from "../utils/paymentMethods.js";
 
 const orderItemSchema = new mongoose.Schema(
   {
@@ -41,6 +42,11 @@ const orderSchema = new mongoose.Schema(
     paymentStatus: {
       type: String,
       default: "pending"
+    },
+    paymentMethod: {
+      type: String,
+      enum: PAYMENT_METHODS,
+      default: DEFAULT_PAYMENT_METHOD
     },
     shippingMethod: {
       type: String,

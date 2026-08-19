@@ -1,12 +1,20 @@
 import nodemailer from "nodemailer";
 import { env } from "../config/env.js";
+import { ApiError } from "./ApiError.js";
 
-function hasSmtpConfig() {
+export const MAIL_SERVICE_UNAVAILABLE_MESSAGE =
+  "No se pudo enviar el mail porque el servicio de correo no esta disponible.";
+
+export function isMailerConfigured() {
   return Boolean(env.smtpHost && env.smtpUser && env.smtpPass);
 }
 
 export async function sendMail({ to, subject, html }) {
-  if (!hasSmtpConfig()) {
+  if (!isMailerConfigured()) {
+    if (env.isProduction) {
+      throw new ApiError(503, MAIL_SERVICE_UNAVAILABLE_MESSAGE);
+    }
+
     return {
       mocked: true,
       preview: { to, subject, html }

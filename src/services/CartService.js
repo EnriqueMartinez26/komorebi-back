@@ -69,7 +69,11 @@ export class CartService {
     } else {
       const product = await this.productRepository.findById(item.productId);
 
-      if (!product || product.stock < quantity) {
+      if (!product || !product.isActive) {
+        throw new ApiError(404, "Producto inexistente.");
+      }
+
+      if (product.stock < quantity) {
         throw new ApiError(400, "No hay stock suficiente.");
       }
 

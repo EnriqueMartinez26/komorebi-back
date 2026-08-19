@@ -27,7 +27,7 @@ export class OrderService {
 
       if (!product) {
         await this.restoreStock(discounted);
-        throw new ApiError(400, `No hay stock suficiente para ${item.nameSnapshot}.`);
+        throw new ApiError(400, await this.buildUnavailableMessage(item));
       }
 
       discounted.push(item);
@@ -46,6 +46,7 @@ export class OrderService {
         })),
         amount: cart.total,
         paymentStatus: "pending",
+        paymentMethod: payload.paymentMethod,
         shippingMethod: payload.shippingMethod,
         shippingAddress: payload.shippingAddress,
         orderStatus: "created"
@@ -65,6 +66,16 @@ export class OrderService {
     }
 
     return order;
+  }
+
+  async buildUnavailableMessage(item) {
+    const product = await this.productRepository.findById(item.productId);
+
+    if (!product || !product.isActive) {
+      return `${item.nameSnapshot} ya no esta disponible.`;
+    }
+
+    return `No hay stock suficiente para ${item.nameSnapshot}.`;
   }
 
   async restoreStock(items) {
